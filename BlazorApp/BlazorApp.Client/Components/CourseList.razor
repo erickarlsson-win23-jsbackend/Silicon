@@ -49,7 +49,22 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(3000);
-        courses = await httpClient.GetFromJsonAsync<Course[]>("https://localhost:7275/api/Courses");
+        //Gamla hårdkodade länken till lokala APIn
+        // try
+        // {
+        //     await Task.Delay(3000);
+        //     courses = await httpClient.GetFromJsonAsync<Course[]>("https://localhost:7275/api/Courses");
+            
+        // }
+        // catch (Exception ex) { }
+
+        //URI finns i appsettings. Ligger inte i azure än, appsettings saknar länk helt
+        try
+        {
+            await Task.Delay(3000);
+            courses = await httpClient.GetFromJsonAsync<Course[]>(Environment.GetEnvironmentVariable("COURSES_API_URI"));
+
+        }
+        catch (Exception ex) { }
     }
 }

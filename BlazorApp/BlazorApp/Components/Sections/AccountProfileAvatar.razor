@@ -59,9 +59,8 @@ else
             var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15));
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
             content.Add(fileContent, "file", selectedFile.Name);
-
-            // Fixa länken
-            var response = await Http.PostAsync("UPLOAD-LÄNK", content);
+           
+            var response = await Http.PostAsync(Environment.GetEnvironmentVariable("FILEPROVIDER_UPLOAD_URI"), content);
             if (response.IsSuccessStatusCode)
             {
                 await LoadUserDataAsync();
