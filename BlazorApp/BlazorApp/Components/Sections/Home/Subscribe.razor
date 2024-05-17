@@ -1,0 +1,21 @@
+﻿<section id="subscribe">
+    <div class="container">
+        <div class="subscribe-title">
+            <h1>Don't Want to Miss Anything?</h1>
+            <img src="images/arrows.svg" alt="Swirly arrow" />
+        </div>
+        <div class="subscribe-options">
+            <h4>Sign up for Newsletters</h4>
+            <form asp-action="Index" asp-controller="Subscribe" method="post">
+                <input asp-for="" />
+
+                <button id="form-submit" class="btn-theme" type="submit">Subscribe *</button>
+            </form>
+        </div>
+
+    </div>
+</section>
+
+@code {
+
+}

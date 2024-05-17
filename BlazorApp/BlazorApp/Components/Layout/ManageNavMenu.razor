@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using BlazorApp.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+@rendermode InteractiveAuto
+
+<aside>
+    <nav>
+        <NavLink class="btn-theme-s" href="/account/details" Match="NavLinkMatch.All">Account Details</NavLink>
+        <NavLink class="btn-transparent" @onclick="HandleSignOut">Sign out</NavLink>
+    </nav>
+</aside>
+
+
+
+@code {
+    // Utloggning funkar inte, kolla sample pages?
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private async Task HandleSignOut()
+    {
+        await SignInManager.SignOutAsync();
+    }
+}

@@ -1,0 +1,55 @@
+﻿@inject HttpClient httpClient
+
+@if (courses == null)
+{
+    <p>Loading courses...</p>
+    
+}
+else
+{
+    foreach (var course in courses)
+    {
+        <div class="box">
+            <NavLink href="/">
+                @if (course.IsBestseller)
+                {
+                    <div class="bestseller">Best Seller</div>
+                }
+
+                <button class="btn btn-circle"><i class="fa-regular fa-bookmark"></i></button>
+
+                <img src="@course.ImageName" alt="@course.Title">
+                <h5>@course.Title</h5>
+                <div>By @course.Author</div>
+                @if (course.DiscountPrice == 0)
+                {
+                    <div class="normal-price">$@course.OriginalPrice</div>
+                }
+                else
+                {
+                    <div class="discount-price">$@course.DiscountPrice</div>
+                    <del>$@course.OriginalPrice</del>
+                }
+                <hr />
+                <div class="course-bottom">
+                    <div><i class="fa-regular fa-clock"></i>@course.Hours</div>
+                    <div>
+                        <div><i class="fa-regular fa-thumbs-up"></i>@course.LikesInPercent (@course.LikesInNumbers)</div>
+                        <div></div>
+                    </div>
+                </div>
+            </NavLink>
+        </div>
+    }
+}
+
+
+@code {
+    private Course[] courses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(3000);
+        courses = await httpClient.GetFromJsonAsync<Course[]>("https://localhost:7275/api/Courses");
+    }
+}
