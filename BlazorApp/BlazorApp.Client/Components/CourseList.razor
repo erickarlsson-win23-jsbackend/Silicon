@@ -1,4 +1,5 @@
-﻿@inject HttpClient httpClient
+﻿@using BlazorApp.Models
+@inject HttpClient httpClient
 
 @if (courses == null)
 {
@@ -18,7 +19,7 @@ else
 
                 <button class="btn btn-circle"><i class="fa-regular fa-bookmark"></i></button>
 
-                <img src="@course.ImageName" alt="@course.Title">
+                <img src="@course.ImageUri" alt="@course.Title">
                 <h5>@course.Title</h5>
                 <div>By @course.Author</div>
                 @if (course.DiscountPrice == 0)
@@ -45,26 +46,43 @@ else
 
 
 @code {
-    private Course[] courses;
+    private new List<Course>? courses;
 
     protected override async Task OnInitializedAsync()
     {
-        //Gamla hårdkodade länken till lokala APIn
-        // try
-        // {
-        //     await Task.Delay(3000);
-        //     courses = await httpClient.GetFromJsonAsync<Course[]>("https://localhost:7275/api/Courses");
-            
-        // }
-        // catch (Exception ex) { }
+        
+        var query = new GraphQLQuery { Query = "{getAllCourses {id title authors {name} imageUri prices {price discount} hours likesInPercent likes isBestseller }}" };
+        var response = await httpClient.PostAsJsonAsync("COURSES_API_URI", query);
 
-        //URI finns i appsettings. Ligger inte i azure än, appsettings saknar länk helt
-        try
+        if (response.IsSuccessStatusCode)
         {
-            await Task.Delay(3000);
-            courses = await httpClient.GetFromJsonAsync<Course[]>(Environment.GetEnvironmentVariable("COURSES_API_URI"));
+            var result = await response.Content.ReadFromJsonAsync<DynamicGraphQLResponse>();
+            courses = result?.Data.GetProperty("getAllCourses").EnumerateArray()
+                .Select(course => new Course
+                    {
+                        Id = course.GetProperty("id").GetString(),
+                        IsBestseller = course.GetProperty("isBestseller").GetBoolean(),
+                        ImageUri = course.GetProperty("imageUri").GetString(),
+                        Title = course.GetProperty("title").GetString(),
+                        Author = course.GetProperty("authors")[0].GetProperty("name").GetString(),
+                        OriginalPrice = course.GetProperty("prices").GetProperty("price").GetDouble(),
+                        DiscountPrice = course.GetProperty("prices").GetProperty("discount").GetDouble(),
+                                
 
+                        Hours = course.GetProperty("hours").GetString(),
+                        LikesInPercent = course.GetProperty("likesInPercent").GetString(),
+                        LikesInNumbers = course.GetProperty("likes").GetString()
+
+                            // För två författare, funkar inte om det endast finns en
+                            // Author = string.Concat(course.GetProperty("authors")[0].GetProperty("name").GetString(), " & ", course.GetProperty("authors")[0].GetProperty("name").GetString()),
+                        
+                            // Hämta priser med currency (saknas is course-modellen)
+                            //         OriginalPrice = $"{course.GetProperty("prices").GetProperty("currency").GetString()} {course.GetProperty("prices").GetProperty("price").GetDouble()}",
+                        // DiscountPrice = course.GetProperty("prices").GetProperty("discount").GetDouble() > 0
+                        //             ? $"{course.GetProperty("prices").GetProperty("currency").GetString()} {course.GetProperty("prices").GetProperty("price").GetDouble() - course.GetProperty("prices").GetProperty("discount").GetDouble()}"
+                        //             : null,
+                    })
+                .ToList();
         }
-        catch (Exception ex) { }
     }
 }

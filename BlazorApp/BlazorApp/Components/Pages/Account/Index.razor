@@ -1,8 +1,11 @@
 ﻿@page "/account/details"
 
+@attribute [StreamRendering]
+
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using BlazorApp.Data
+
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -12,47 +15,70 @@
 <h3>Profile</h3>
 
 
-@* GAMLA SIDAN FÖLJER NEDAN *@
+@* GAMLA SIDAN FÖLJER NEDAN, WIP *@
 <div class="container">
     <section id="account-details">
+        <aside>
+            @if (user == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <div class="profile-info">
+                    <div class="profile-image">
+                        <img src="/images/uploads/profiles/@user.ProfileImage" alt="@user.FirstName @user.LastName" ) />
+
+
+                        <EditForm Model="@uploadModel" OnValidSubmit="HandleProfileImageUpload">
+                            <InputFile id="fileUploader" OnChange="HandleFileSelected" hidden />
+                            <label for="fileUploader" class="btn-gray btn-circle btn-circle-sm"><i class="fa-solid fa-arrows-rotate"></i></label>
+                        </EditForm>
+                    </div>
+                    <h5>@user.FirstName @user.LastName</h5>
+                    <p>@user.Email</p>
+                </div>
+            }
+        </aside>
 
         
 
         <div class="details">
            
             <section class="basic-info">
-                <form method="post" asp-controller="Account" asp-action="BasicInfo">
+               @*  <EditForm Model="Input" method="post" asp-route-returnUrl="/account/details" OnValidSubmit="UpdateUser" FormName="update" novalidate>
                     <h2>Account Details</h2>
                     <h5>Basic Info</h5>
 
                     <div class="content">
                         <div id="form-firstname" class="input-group">
-                            <label asp-for="BasicInfo!.FirstName"></label>
-                            <span asp-validation-for="BasicInfo!.FirstName"></span>
-                            <input asp-for="BasicInfo!.FirstName" />
+                            <label>First name</label>
+                            <InputText @bind-Value="Input.FirstName" autocomplete="givenname" aria-required="true" placeholder="@user.FirstName" />
+                            <ValidationMessage For="() => Input.FirstName" class="text-danger" />
                         </div>
 
                         <div id="form-lastname" class="input-group">
-                            <label asp-for="BasicInfo!.LastName"></label>
-                            <span asp-validation-for="BasicInfo!.LastName"></span>
-                            <input asp-for="BasicInfo!.LastName" />
+                            <label>First name</label>
+                            <InputText @bind-Value="Input.FirstName" autocomplete="surname" aria-required="true" placeholder="@user.LastName" />
+                            <ValidationMessage For="() => Input.LastName" class="text-danger" />
                         </div>
 
                         <div id="form-email" class="input-group">
-                            <label asp-for="BasicInfo!.Email"></label>
-                            <span asp-validation-for="BasicInfo!.Email"></span>
-                            <input asp-for="BasicInfo!.Email" />
+                            <label>Email</label>
+                            <InputText type="email" @bind-Value="Input.Email" autocomplete="email" aria-required="true" placeholder="@user.Email" />
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
                         </div>
 
                         <div id="form-phone" class="input-group">
-                            <label asp-for="BasicInfo!.Phone"></label>
-                            <span asp-validation-for="BasicInfo!.Phone"></span>
-                            <input asp-for="BasicInfo!.Phone" />
+                            <label>Phone number</label>
+                            <InputText type="phone" @bind-Value="Input.PhoneNumber" autocomplete="phone" aria-required="true" placeholder="@user.PhoneNumber" />
+                            <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
                         </div>
 
                         <div id="form-bio" class="input-group">
-                            <label asp-for="BasicInfo!.Biography">Bio <span>(optional)</span></label>
-                            <textarea asp-for="BasicInfo!.Biography"></textarea>
+                            <label>Bio <span>(optional)</span></label>
+                            <InputText type="bio" @bind-Value="Input.Biography" autocomplete="bio" aria-required="true" placeholder="@user.Biography" />
+                            
                         </div>
 
                         <div class="form-buttons">
@@ -61,10 +87,10 @@
                         </div>
 
                     </div>
-                </form>
+                </EditForm> *@
             </section>
             <hr />
-            <section class="address-info">
+            @* <section class="address-info">
                 <form method="post" asp-controller="Account" asp-action="AddressInfo">
                     <h5>Address</h5>
 
@@ -95,22 +121,28 @@
                         </div>
                     </div>
                 </form>
-            </section>
+            </section> *@
         </div>
 
     </section>
 </div>
 
 @code {
-    private ApplicationUser user = default!;
+    [CascadingParameter]
+    private ApplicationUser user { get; set; } = default!;
     private string? username;
     private string? phoneNumber;
+
+    private MultipartFormDataContent uploadModel = new MultipartFormDataContent();
+    private IBrowserFile? selectedFile;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,25 +153,118 @@
         Input.PhoneNumber ??= phoneNumber;
     }
 
+
     private async Task OnValidSubmitAsync()
     {
-        if (Input.PhoneNumber != phoneNumber)
-        {
-            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!setPhoneResult.Succeeded)
-            {
-                
-            }
-        }
+        // if (Input.PhoneNumber != phoneNumber)
+        // {
+        //     var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
+        //     if (!setPhoneResult.Succeeded)
+        //     {
+
+        //     }
+        // }
 
         await SignInManager.RefreshSignInAsync(user);
-        
+
+    }
+
+    public async Task UpdateUser(EditContext editContext)
+    {
+        var userToUpdate = user;
+
+        if(Input != null)
+        {
+            userToUpdate.FirstName = Input.FirstName;
+            userToUpdate.LastName = Input.LastName;
+            userToUpdate.Email = Input.Email;
+            userToUpdate.PhoneNumber = Input.PhoneNumber;
+            userToUpdate.Biography = Input.Biography;
+
+            userToUpdate.Address.AddressLine_1 = Input.AddressLine_1;
+            userToUpdate.Address.AddressLine_2 = Input.AddressLine_2;
+            userToUpdate.Address.PostalCode = Input.PostalCode;
+            userToUpdate.Address.City = Input.City;
+
+
+            await UserManager.UpdateAsync(userToUpdate);
+        }
     }
 
     private sealed class InputModel
     {
+        [Required]
+        [Display(Name = "First name")]
+        public string FirstName { get; set; } = null!;
+
+        [Required]
+        [Display(Name = "Last name")]
+        public string LastName { get; set; } = null!;
+
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        [RegularExpression(@"^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Incorrect email format.")]
+        public string Email { get; set; } = "";
+
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [Display(Name = "Biography")]
+        public string? Biography { get; set; }
+
+        [Display(Name = "AddressLine_1")]
+        public string? AddressLine_1 { get; set; }
+
+        [Display(Name = "AddressLine_2")]
+        public string? AddressLine_2 { get; set; }
+
+        [Display(Name = "PostalCode")]
+        public string? PostalCode { get; set; }
+
+        [Display(Name = "City")]
+        public string? City { get; set; }
     }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task LoadUserDataAsync()
+    {
+        user = await UserManager.GetUserAsync(HttpContext.User) ?? null!;
+    }
+
+
+    public async Task HandleProfileImageUpload()
+    {
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, "file", selectedFile.Name);
+
+            var response = await Http.PostAsync(Environment.GetEnvironmentVariable("FILEPROVIDER_UPLOAD_URI"), content);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadUserDataAsync();
+
+                StateHasChanged();
+            }
+            else
+            {
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
 }
