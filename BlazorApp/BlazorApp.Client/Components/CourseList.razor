@@ -52,7 +52,7 @@ else
     {
         
         var query = new GraphQLQuery { Query = "{getAllCourses {id title authors {name} imageUri prices {price discount} hours likesInPercent likes isBestseller }}" };
-        var response = await httpClient.PostAsJsonAsync("COURSES_API_URI", query);
+        var response = await httpClient.PostAsJsonAsync("https://courseprovider-ek.azurewebsites.net/api/graphql?", query);
 
         if (response.IsSuccessStatusCode)
         {
