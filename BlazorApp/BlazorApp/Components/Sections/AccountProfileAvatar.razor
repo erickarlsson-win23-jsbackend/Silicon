@@ -33,11 +33,11 @@ else
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     await LoadUserDataAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserDataAsync();
 
-    // }
+    }
 
     private void HandleFileSelected(InputFileChangeEventArgs e)
     {

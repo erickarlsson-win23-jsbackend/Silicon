@@ -1,0 +1,43 @@
+﻿#one-course {
+    .course-header {
+        position: relative;
+
+        img {
+            width: 100%;
+            z-index: 0;
+            max-height: 500px;
+            overflow: hidden;
+            object-fit: cover;
+        }
+
+        .container {
+            z-index: 1;
+            position: absolute;
+            top: 20%;
+            left: 14%;
+            color: var(--color-gray-000);
+
+            .course-ratings {
+                display: flex;
+                justify-content: space-evenly;
+
+                .div{
+                    
+                }
+            }
+            .course-author {
+
+            }
+        }
+    }
+    .course-content {
+        justify-content: start;
+    }
+    .course-includes {
+        position: absolute;
+        right: 20%;
+        
+    }
+}
+
+

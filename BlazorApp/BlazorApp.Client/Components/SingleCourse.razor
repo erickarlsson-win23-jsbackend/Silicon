@@ -1,0 +1,139 @@
+﻿@inject HttpClient httpClient
+
+@using BlazorApp.Client.Models
+@using BlazorApp.Models
+
+@if (singleCourse == null)
+{
+    <p>Loading course...</p>
+
+}
+else
+{
+
+<section class="course-header">
+    <img src="@singleCourse.ImageHeaderUri" />
+    <div class="container">
+        <h1>@singleCourse.Title</h1>
+        <p>@singleCourse.Ingress</p>
+        <div class="course-ratings">
+            <div>@singleCourse.StarRating reviews</div>
+            <div>@singleCourse.Likes likes</div>
+            <div>@singleCourse.Hours hours</div>
+        </div>
+        <div class="course-author">
+            
+            <div>
+                <div>Created by</div>
+                <div>@singleCourse.Authors[0].Name</div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="course-content">
+    <div>
+        <div class="container">
+            <h1>Course Description</h1>
+            <p>@singleCourse.Content.Description</p>
+
+            <h3>What you'll learn</h3>
+            @foreach (var item in singleCourse.Content.Includes)
+            {
+                    <p><i class="fa-solid fa-check"></i>@item</p>
+            }
+        </div>
+        <aside class="course-includes">
+            @foreach (var item in singleCourse.Content.Includes)
+            {
+                    <p>@item</p>
+            }
+                @if (@singleCourse.Prices.Discount == 0)
+                {
+                    <div class="normal-price">$@singleCourse.Prices.Price</div>
+                }
+                else
+                {
+                    <div class="discount-price">$@singleCourse.Prices.Discount</div>
+                    <del>$@singleCourse.Prices.Price</del>
+                }
+        
+            <NavLink href="/">Join Course</NavLink>
+        </aside>
+     </div>
+     <div class="container">
+        <h1>Program Details</h1>
+
+        @foreach (var item in singleCourse.Content.ProgramDetails)
+        {
+            <div>
+                <h4>@item.Title</h4>
+                <p>@item.Description</p>
+            </div>
+        }
+    </div>
+</section>
+}
+
+@code {
+    [Parameter] 
+    public string? courseId { get; set; }
+
+    private CourseDetails singleCourse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GraphQLQuery { Query = $@"{{getCourseById(id: ""{courseId}"") {{id title authors {{name}} imageUri imageHeaderUri isBestseller isDigital categories ingress starRating reviews likesInPercent likes hours prices {{price discount currency}} content {{description includes programDetails {{id title description}}}}}}}}" };
+        var response = await httpClient.PostAsJsonAsync("https://courseprovider-ek.azurewebsites.net/api/graphql?", query);
+
+        if (response.IsSuccessStatusCode)
+        {
+
+            var result = await response.Content.ReadFromJsonAsync<DynamicGraphQLResponse>();
+            var courseJsonElement = result?.Data.GetProperty("getCourseById");
+
+            if (courseJsonElement.HasValue)
+            {
+
+                var course = courseJsonElement.Value;
+                singleCourse = new CourseDetails
+                    {
+                        Id = course.GetProperty("id").GetString(),
+                        Title = course.GetProperty("title").GetString(),
+                        Authors = course.GetProperty("authors").EnumerateArray().Select(author => new Author
+                        {
+                            Name = author.GetProperty("name").GetString()
+                        }).ToList(),
+                        ImageUri = course.GetProperty("imageUri").GetString(),
+                        ImageHeaderUri = course.GetProperty("imageHeaderUri").GetString(), 
+                        IsBestseller = course.GetProperty("isBestseller").GetBoolean(),
+                        IsDigital = course.GetProperty("isDigital").GetBoolean(), 
+                        Categories = course.GetProperty("categories").EnumerateArray().Select(category => category.GetString()).ToArray(), 
+                        Ingress = course.GetProperty("ingress").GetString(), 
+                        StarRating = course.GetProperty("starRating").GetDecimal(), 
+                        Reviews = course.GetProperty("reviews").GetString(), 
+                        LikesInPercent = course.GetProperty("likesInPercent").GetString(),
+                        Likes = course.GetProperty("likes").GetString(),
+                        Hours = course.GetProperty("hours").GetString(),
+                        Prices = new Prices
+                        {
+                            Price = course.GetProperty("prices").GetProperty("price").GetDecimal(),
+                            Discount = course.GetProperty("prices").GetProperty("discount").GetDecimal(),
+                            Currency = course.GetProperty("prices").GetProperty("currency").GetString() 
+                        },
+                        Content = new Content
+                        {
+                            Description = course.GetProperty("content").GetProperty("description").GetString(),
+                            Includes = course.GetProperty("content").GetProperty("includes").EnumerateArray().Select(include => include.GetString()).ToArray(),
+                            ProgramDetails = course.GetProperty("content").GetProperty("programDetails").EnumerateArray().Select(programDetail => new ProgramDetailItem
+                            {
+                                Id = programDetail.GetProperty("id").GetInt32(),
+                                Title = programDetail.GetProperty("title").GetString(),
+                                Description = programDetail.GetProperty("description").GetString()
+                            }).ToList()
+                        }
+                    };
+            }
+        }
+    }
+
+}

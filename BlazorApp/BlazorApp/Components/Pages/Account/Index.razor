@@ -130,8 +130,8 @@
 @code {
     [CascadingParameter]
     private ApplicationUser user { get; set; } = default!;
-    private string? username;
-    private string? phoneNumber;
+    // private string? username;
+    // private string? phoneNumber;
 
     private MultipartFormDataContent uploadModel = new MultipartFormDataContent();
     private IBrowserFile? selectedFile;
@@ -144,30 +144,30 @@
 
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        user = await UserManager.GetUserAsync(HttpContext.User) ?? null!;
-        username = await UserManager.GetUserNameAsync(user);
-        phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     user = await UserManager.GetUserAsync(HttpContext.User) ?? null!;
+    //     username = await UserManager.GetUserNameAsync(user);
+    //     phoneNumber = await UserManager.GetPhoneNumberAsync(user);
 
-        Input.PhoneNumber ??= phoneNumber;
-    }
+    //     Input.PhoneNumber ??= phoneNumber;
+    // }
 
 
-    private async Task OnValidSubmitAsync()
-    {
-        // if (Input.PhoneNumber != phoneNumber)
-        // {
-        //     var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-        //     if (!setPhoneResult.Succeeded)
-        //     {
+    // private async Task OnValidSubmitAsync()
+    // {
+    //     // if (Input.PhoneNumber != phoneNumber)
+    //     // {
+    //     //     var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
+    //     //     if (!setPhoneResult.Succeeded)
+    //     //     {
 
-        //     }
-        // }
+    //     //     }
+    //     // }
 
-        await SignInManager.RefreshSignInAsync(user);
+    //     await SignInManager.RefreshSignInAsync(user);
 
-    }
+    // }
 
     public async Task UpdateUser(EditContext editContext)
     {

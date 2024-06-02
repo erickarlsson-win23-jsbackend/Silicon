@@ -8,14 +8,14 @@
 <aside>
     <nav>
         <NavLink class="btn-theme-s" href="/account/details" Match="NavLinkMatch.All">Account Details</NavLink>
-        <NavLink class="btn-transparent" @onclick="HandleSignOut">Sign out</NavLink>
+        <NavLink class="btn-transparent" href="/account/signedout" @onclick="HandleSignOut">Sign out</NavLink>
     </nav>
 </aside>
 
 
 
 @code {
-    // Utloggning funkar inte, kolla sample pages?
+    // Utloggning funkar inte, WIP
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 

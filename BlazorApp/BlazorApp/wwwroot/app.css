@@ -1326,6 +1326,16 @@ body {
 #courses .container .content .courses-list .box div {
   color: var(--color-gray-600);
 }
+#courses .container .content .courses-list .box .course-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  display: block;
+}
 #courses .container .content .courses-list .box del {
   color: var(--color-gray-400);
 }
@@ -1348,4 +1358,33 @@ body {
   border-radius: 0;
   display: flex;
   justify-content: space-between;
+}
+
+#one-course .course-header {
+  position: relative;
+}
+#one-course .course-header img {
+  width: 100%;
+  z-index: 0;
+  max-height: 500px;
+  overflow: hidden;
+  object-fit: cover;
+}
+#one-course .course-header .container {
+  z-index: 1;
+  position: absolute;
+  top: 20%;
+  left: 14%;
+  color: var(--color-gray-000);
+}
+#one-course .course-header .container .course-ratings {
+  display: flex;
+  justify-content: space-evenly;
+}
+#one-course .course-content {
+  justify-content: start;
+}
+#one-course .course-includes {
+  position: absolute;
+  right: 20%;
 }

@@ -6,7 +6,7 @@
 <section class="container">
     <div id="account-details" >
         <aside>
-            @* <AccountProfileAvatar user="user"/> *@
+            <AccountProfileAvatar user="user"/>
             <ManageNavMenu />
         </aside>
         <div class="details">
@@ -16,8 +16,8 @@
 </section>
 
 @code {
-    // [CascadingParameter]
-    // private ApplicationUser user { get; set; } = default!;
+    [CascadingParameter]
+    private ApplicationUser user { get; set; } = default!;
 
     // [CascadingParameter]
     // private HttpContext HttpContext { get; set; } = default!;

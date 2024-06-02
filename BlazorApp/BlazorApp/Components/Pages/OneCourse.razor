@@ -1,0 +1,17 @@
+﻿@page "/courses/{courseId}"
+@inject HttpClient httpClient
+
+@using BlazorApp.Client.Models
+@using BlazorApp.Models
+
+<section id="one-course">
+    <SingleCourse courseId="@courseId"/>
+</section>
+
+@code {
+    [Parameter] 
+    public string? courseId { get; set; }
+
+    
+
+}

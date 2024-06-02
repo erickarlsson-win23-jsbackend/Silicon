@@ -1,5 +1,6 @@
 ﻿@using BlazorApp.Models
 @inject HttpClient httpClient
+@inject NavigationManager navigationManager
 
 @if (courses == null)
 {
@@ -10,14 +11,13 @@ else
 {
     foreach (var course in courses)
     {
-        <div class="box">
-            <NavLink href="/">
+        <div class="box" >
+            <a class="course-button" href="/courses/@course.Id">
                 @if (course.IsBestseller)
                 {
                     <div class="bestseller">Best Seller</div>
                 }
-
-                <button class="btn btn-circle"><i class="fa-regular fa-bookmark"></i></button>
+                               
 
                 <img src="@course.ImageUri" alt="@course.Title">
                 <h5>@course.Title</h5>
@@ -39,7 +39,7 @@ else
                         <div></div>
                     </div>
                 </div>
-            </NavLink>
+            </a>
         </div>
     }
 }
@@ -48,9 +48,10 @@ else
 @code {
     private new List<Course>? courses;
 
+
     protected override async Task OnInitializedAsync()
     {
-        
+
         var query = new GraphQLQuery { Query = "{getAllCourses {id title authors {name} imageUri prices {price discount} hours likesInPercent likes isBestseller }}" };
         var response = await httpClient.PostAsJsonAsync("https://courseprovider-ek.azurewebsites.net/api/graphql?", query);
 
@@ -67,22 +68,30 @@ else
                         Author = course.GetProperty("authors")[0].GetProperty("name").GetString(),
                         OriginalPrice = course.GetProperty("prices").GetProperty("price").GetDouble(),
                         DiscountPrice = course.GetProperty("prices").GetProperty("discount").GetDouble(),
-                                
+
 
                         Hours = course.GetProperty("hours").GetString(),
                         LikesInPercent = course.GetProperty("likesInPercent").GetString(),
                         LikesInNumbers = course.GetProperty("likes").GetString()
 
-                            // För två författare, funkar inte om det endast finns en
-                            // Author = string.Concat(course.GetProperty("authors")[0].GetProperty("name").GetString(), " & ", course.GetProperty("authors")[0].GetProperty("name").GetString()),
-                        
-                            // Hämta priser med currency (saknas is course-modellen)
-                            //         OriginalPrice = $"{course.GetProperty("prices").GetProperty("currency").GetString()} {course.GetProperty("prices").GetProperty("price").GetDouble()}",
-                        // DiscountPrice = course.GetProperty("prices").GetProperty("discount").GetDouble() > 0
-                        //             ? $"{course.GetProperty("prices").GetProperty("currency").GetString()} {course.GetProperty("prices").GetProperty("price").GetDouble() - course.GetProperty("prices").GetProperty("discount").GetDouble()}"
-                        //             : null,
+
                     })
                 .ToList();
+
         }
     }
+
+    [Parameter] public EventCallback<string> OnCourseSelected { get; set; }
+
+    public void SelectCourse(string courseId)
+    {
+        OnCourseSelected.InvokeAsync(courseId);
+    }
+
+    public void NavigateToCourse(string id)
+    {
+        navigationManager.NavigateTo($"courses/{id}");
+    }
 }
+
+
